@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document id="root_doc">
+<Folder><name>mission</name>
+  <Placemark>
+	<Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+      <LineString><coordinates>-70.425160624034,-23.1161281138878 -70.4248911092861,-23.1149549320439 -70.4242252493206,-23.1113719712774 -70.4235276817378,-23.107836571937 -70.4233057284159,-23.1067268053279</coordinates></LineString>
+  </Placemark>
+</Folder>
+</Document></kml>
