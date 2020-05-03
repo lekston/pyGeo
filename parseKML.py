@@ -46,13 +46,11 @@ class RotatedBoundingBox(object):
             out += 'Listing items:\n'
             for item in self.root.iter():
                 out += '\t' + str(item.tag) + '\n'
-
             out += 'Listing dict:\n'
             out += '\t'+ str(self.root.Document.__dict__) + '\n'
-
             # A direct shortcut would be:
             # self.root.Document.Folder.Placemark.MultiGeometry.Linestring.__dict__
-            # but this wound not explore the tree nor would it do error checking
+            # but here we also want full tree exploration and error checking
             for entry in self.root.Document.Folder.getchildren():
                 if 'Placemark' in entry.tag:
                     out += 'Found a placemark, exploring:\n'
@@ -97,10 +95,10 @@ class RotatedBoundingBox(object):
 
     def extract_corners(self):
         self.parsed_points = []
+        corner_points = []
         for item in self.root.Document.Folder.Placemark.MultiGeometry.getchildren():
             if 'LineString' in item.tag:
                 self.parse_line_string(item)
-
         if len(self.parsed_points) is not 0:
             indexes = self.min_max_XY(self.parsed_points)
             print("Indexes:\n\t" + str(indexes))
@@ -108,6 +106,7 @@ class RotatedBoundingBox(object):
             print("Corner points:")
             for pt in corner_points:
                 print("\t" + str(pt))
+        return corner_points
 
     def extract_raw(self):
         for item in self.root.Document.Folder.Placemark.MultiGeometry.getchildren():
@@ -123,13 +122,16 @@ class RotatedBoundingBox(object):
                 limits.append( lim )
         for l in limits:
             print("Cable Limits:\n0:\t" + l[0] + "\n1:\t" + l[1])
+        return limits
 
 
-kml_file = './demo/demo_chunk.kml'
+def test_demo_chunk():
+    kml_file = './demo/demo_chunk.kml'
 
-rotBB = RotatedBoundingBox(kml_file)
+    rotBB = RotatedBoundingBox(kml_file)
+    #print(rotBB)
+    rotBB.extract_corners()
+    rotBB.extract_cable_limits()
 
-#print(rotBB)
-
-rotBB.extract_corners()
-rotBB.extract_cable_limits()
+if __name__ == '__main__':
+    test_demo_chunk()
