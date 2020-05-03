@@ -4,7 +4,6 @@ import sys
 import os
 import fnmatch
 import csv
-# import pdb
 
 example_path="Chile_MRK/terreno 2 por km/vuelos/100_0042_Timestamp.MRK"
 
@@ -35,7 +34,8 @@ class WriterClass(object):
 
 outWriter = WriterClass()
 
-def extractColumns(path):
+def extractColumns(root, item):
+    path = root + '/' + item
     #limit = 3
     with open(path) as file:
         data_reader = csv.reader(file, delimiter='\t')
@@ -46,21 +46,25 @@ def extractColumns(path):
             #print(row[6:10])
             outWriter.dumpToFile(row[6:10], path)
 
-def traverse(path):
+def traverse(path, pattern):
     for root, dir, files in os.walk(path):
         if str(root) != ".":
             print(root)
-        for item in fnmatch.filter(files, "*.MRK"):
+        for item in fnmatch.filter(files, pattern):
             print("  > " + item)
 
 
-def visit(path):
+def dummyAction(*argv):
+    pass
+
+
+def visit(path, pattern, action = dummyAction):
     for root, dir, files in os.walk(path):
         if str(root) != ".":
             print(root)
-        for item in fnmatch.filter(files, "*.MRK"):
+        for item in fnmatch.filter(files, pattern):
             print("  > " + item)
-            extractColumns(root + "/" + item)
+            action(root, item)
 
 
 if __name__ == "__main__":
@@ -72,7 +76,7 @@ if __name__ == "__main__":
         else:
             path=sys.arg[1]
 
-        visit(path)
+        visit(path, "*.MRK", action=extractColumns)
         sys.exit(0)
     except (RuntimeError, TypeError, NameError, Exception) as e:
         print("Caught: " + e + ". Exiting.")

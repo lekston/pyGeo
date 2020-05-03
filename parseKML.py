@@ -91,7 +91,8 @@ class RotatedBoundingBox(object):
         max_lon_idx = max(range(len(lon)), key=lon.__getitem__)
         min_lat_idx = min(range(len(lat)), key=lat.__getitem__)
         max_lat_idx = max(range(len(lat)), key=lat.__getitem__)
-        return (min_lon_idx, max_lon_idx, min_lat_idx, max_lat_idx)
+        # order clockwise
+        return (max_lat_idx, max_lon_idx, min_lat_idx, min_lon_idx)
 
     def extract_corners(self):
         self.parsed_points = []
@@ -101,7 +102,7 @@ class RotatedBoundingBox(object):
                 self.parse_line_string(item)
         if len(self.parsed_points) is not 0:
             indexes = self.min_max_XY(self.parsed_points)
-            print("Indexes:\n\t" + str(indexes))
+            # print("Indexes:\n\t" + str(indexes))
             corner_points = [self.parsed_points[i] for i in indexes]
             print("Corner points:")
             for pt in corner_points:
@@ -114,14 +115,15 @@ class RotatedBoundingBox(object):
                 for raw_points in self.get_raw_points(item):
                     print(len(raw_points))
 
-    def extract_cable_limits(self):
+    def extract_cable_limits(self, verbose = True):
         limits = []
         for item in self.root.Document.Folder.Placemark.MultiGeometry.getchildren():
             if 'LineString' in item.tag:
                 lim = self.limiting_points(item)
                 limits.append( lim )
-        for l in limits:
-            print("Cable Limits:\n0:\t" + l[0] + "\n1:\t" + l[1])
+        if verbose:
+            for l in limits:
+                print("Cable Limits:\n0:\t" + l[0] + "\n1:\t" + l[1])
         return limits
 
 

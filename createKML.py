@@ -8,8 +8,10 @@ from pykml.factory import KML_ElementMaker as KML
 
 class BBFactory(object):
     def __init__(self, name = 'default_name'):
-        self.name = KML.name(name)
-        self.pm = None
+        self.name = name
+        self.pms = []
+        self.coords = ' '
+        self.count = 0
 
     def from_points(self, coordinates):
         # create coordinates string
@@ -18,27 +20,24 @@ class BBFactory(object):
             coords += str(xyz[0]) + ',' \
                     + str(xyz[1]) + ',' \
                     + str(xyz[2]) + ' '
-        return self.finalize_kml(coords)
+        return self.append_place(coords)
 
     def from_strings(self, coordinates):
         # create coordinates string
         coords = ' ' +  ' '.join(coordinates) + ' '
-        return self.finalize_kml(coords)
+        return self.append_place(coords)
 
-    def finalize_kml(self, coords):
-        self.pm = KML.Placemark(self.name,
-            KML.MultiGeometry(
-                KML.LineString(
-                    KML.coordinates(coords)
-                )
-            )
-        )
+    def append_place(self, coords):
+        self.count += 1
+        name = KML.name(self.name + "_{:04d}".format(self.count))
+        geometry = KML.MultiGeometry( KML.LineString( KML.coordinates(coords) ) )
+        self.pms.append( KML.Placemark(name , geometry) )
         return self
 
     def __str__(self):
-        if self.pm is None:
-            return None
-        kml = KML.kml(self.pm)
+        kml = KML.kml()
+        for pm in self.pms:
+            kml.append(pm)
         output = etree.tostring(kml, pretty_print=True)
         return output.decode('utf-8')
 
@@ -55,7 +54,7 @@ def test_from_points():
               [ 20.0, 50.1, 250],
               [ 20.1, 50.1, 250],
               [ 20.1, 50.0, 250]]
-    return bbf.from_points(coords)
+    return bbf.from_points(coords).from_points(coords)
 
 
 def test_from_strings():
@@ -67,7 +66,8 @@ def test_from_strings():
 
 
 if __name__ == '__main__':
-    bb = test_from_strings()
+    # bb = test_from_strings()
+    bb = test_from_points()
     print(bb)
     with open('output.kml','w') as f:
         f.write(str(bb))
