@@ -8,10 +8,9 @@ from pykml.factory import KML_ElementMaker as KML
 
 class BBFactory(object):
     def __init__(self, name = 'default_name'):
-        self.name = name
-        self.pms = []
+        self.name = KML.name(name)
+        self.geometry = None
         self.coords = ' '
-        self.count = 0
 
     def from_points(self, coordinates):
         # create coordinates string
@@ -20,24 +19,23 @@ class BBFactory(object):
             coords += str(xyz[0]) + ',' \
                     + str(xyz[1]) + ',' \
                     + str(xyz[2]) + ' '
-        return self.append_place(coords)
+        return self.append_geometry(coords)
 
     def from_strings(self, coordinates):
         # create coordinates string
         coords = ' ' +  ' '.join(coordinates) + ' '
-        return self.append_place(coords)
+        return self.append_geometry(coords)
 
-    def append_place(self, coords):
-        self.count += 1
-        name = KML.name(self.name + "_{:04d}".format(self.count))
-        geometry = KML.MultiGeometry( KML.LineString( KML.coordinates(coords) ) )
-        self.pms.append( KML.Placemark(name , geometry) )
+    def append_geometry(self, coords):
+        line_string = KML.LineString( KML.coordinates(coords) )
+        if self.geometry is None:
+            self.geometry = KML.MultiGeometry(line_string)
+        self.geometry.append(line_string)
         return self
 
     def __str__(self):
-        kml = KML.kml()
-        for pm in self.pms:
-            kml.append(pm)
+        place_mark = KML.Placemark(self.name, self.geometry)
+        kml = KML.kml(place_mark)
         output = etree.tostring(kml, pretty_print=True)
         return output.decode('utf-8')
 
